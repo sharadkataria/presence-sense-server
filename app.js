@@ -7,6 +7,7 @@ const socketIO = require('socket.io');
 const http = require('http');
 const models = require('./app/models');
 const AccountRouter = require('./app/routes/AccountRoutes');
+const DocumentRouter = require('./app/routes/DocumentRoutes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.set('port', process.env.PORT || 3003);
 
 app.use(AccountRouter);
+app.use(DocumentRouter);
 
 models.sequelize
   .sync()

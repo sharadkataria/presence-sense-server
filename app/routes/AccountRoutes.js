@@ -1,9 +1,9 @@
-const accountRouter = require('express').Router();
+const AccountRouter = require('express').Router();
 const AccountController = require('../controllers/AccountController');
 const accountController = new AccountController();
 
-accountRouter.post('/login', accountController.login);
+AccountRouter.post('/login', accountController.login);
 
-accountRouter.post('/signup', accountController.signup);
+AccountRouter.post('/signup', accountController.signup);
 
-module.exports = accountRouter;
+module.exports = AccountRouter;

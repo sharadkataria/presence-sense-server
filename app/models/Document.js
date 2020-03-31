@@ -13,9 +13,9 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: DataTypes.UUIDV4
       },
       name: DataTypes.STRING,
+      owner_id: DataTypes.INTEGER,
       user_id: DataTypes.INTEGER,
-      public: { type: DataTypes.BOOLEAN, defaultValue: false },
-      active: { type: DataTypes.BOOLEAN, defaultValue: true }
+      public: { type: DataTypes.BOOLEAN, defaultValue: false }
     },
     {
       sequelize,

@@ -1,11 +1,12 @@
 const UserTransformer = async users => {
-  if (users.length) {
+  if (Array.isArray(users) && users.length) {
     for await (let user of users) {
       user.dataValues.id = user.dataValues.uuid;
       delete user.dataValues.uuid;
       delete user.dataValues.password;
     }
-  } else if (users) {
+    return users;
+  } else if (!Array.isArray(users) && users) {
     users.dataValues.id = users.dataValues.uuid;
     delete users.dataValues.uuid;
     delete users.dataValues.password;
