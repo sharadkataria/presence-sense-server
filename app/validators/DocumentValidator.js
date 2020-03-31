@@ -3,7 +3,7 @@ const models = require('../models');
 const { User } = models;
 
 class DocumentValidator {
-  async get(inputs) {
+  async getByID(inputs) {
     let errors = [];
     let { documentID } = inputs;
     if (!documentID) {

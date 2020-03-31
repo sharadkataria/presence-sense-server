@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  let Invite = sequelize.define(
-    'Invite',
+  let SharedDocument = sequelize.define(
+    'SharedDocument',
     {
       id: {
         type: DataTypes.INTEGER(11).UNSIGNED,
@@ -17,13 +17,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'Invite',
-      tableName: 'invites',
+      modelName: 'SharedDocument',
+      tableName: 'shared_documents',
       underscored: true
     }
   );
 
-  Invite.associate = function(models) {};
+  SharedDocument.associate = function(models) {};
 
-  return Invite;
+  return SharedDocument;
 };

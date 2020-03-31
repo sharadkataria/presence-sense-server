@@ -7,8 +7,8 @@ DocumentRouter.post('/documents', authenticate(), documentController.create);
 
 DocumentRouter.get(
   '/documents/:documentID',
-  authenticate,
-  documentController.get
+  authenticate(),
+  documentController.getByID
 );
 
 DocumentRouter.get('/documents', authenticate(), documentController.get);

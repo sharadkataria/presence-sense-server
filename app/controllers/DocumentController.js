@@ -12,6 +12,16 @@ class DocumentController {
     res.send(documents);
   }
 
+  async getByID(req, res) {
+    const user = await getUser(req, res);
+    const result = await documentService.getByID({
+      ...req.params,
+      userID: user
+    });
+    let documents = await DocumentTransformer(result);
+    res.send(documents);
+  }
+
   async create(req, res) {
     const user = await getUser(req, res);
     const result = await documentService.create({ ...req.body, userID: user });

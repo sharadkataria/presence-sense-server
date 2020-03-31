@@ -5,7 +5,7 @@ const basename = path.basename(__filename);
 
 const User = require('./User');
 const Document = require('./Document');
-const Invite = require('./Invite');
+const SharedDocument = require('./SharedDocument');
 const DocumentViewer = require('./DocumentViewer');
 
 const sequelize = new Sequelize(
@@ -29,7 +29,7 @@ let models = {
   User,
   DocumentViewer,
   Document,
-  Invite
+  SharedDocument
 };
 
 fs.readdirSync(__dirname)
