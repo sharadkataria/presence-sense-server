@@ -5,6 +5,7 @@ const bodyparser = require('body-parser');
 const logger = require('morgan');
 const socketIO = require('socket.io');
 const http = require('http');
+const connection = require('./app/config/dbConnection');
 
 const app = express();
 
@@ -27,6 +28,15 @@ app.use(bodyparser.json());
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.set('port', process.env.PORT || 3003);
+
+connection.connect(err => {
+  if (err) {
+    console.log(err);
+    console.log('Error connecting to DB.');
+    return;
+  }
+  console.log('\nConnection established with the DB.');
+});
 
 const server = http.createServer(app);
 const io = socketIO(server);
