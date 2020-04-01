@@ -1,7 +1,8 @@
 const models = require('../models');
+const sequelize = models.sequelize;
 const { Op } = require('sequelize');
-const { User, Document, SharedDocument } = models;
-
+const { User, Document, SharedDocument, DocumentViewer } = models;
+const moment = require('moment');
 const DocumentValidator = require('../validators/DocumentValidator');
 
 class DocumentService {
@@ -13,7 +14,8 @@ class DocumentService {
     let criteria = {
       where: {
         user_id: userID
-      }
+      },
+      order: [['created_at', 'desc']]
     };
 
     const sharedDocuments = await SharedDocument.findAll({
@@ -55,9 +57,6 @@ class DocumentService {
         [Op.or]: [
           {
             uuid: documentID
-          },
-          {
-            public: true
           }
         ]
       }
@@ -71,8 +70,15 @@ class DocumentService {
     let sharedDocument = null;
     const accessDocument = await Document.findOne({
       where: {
-        id: document.id,
-        user_id: userID
+        [Op.or]: [
+          {
+            public: true
+          },
+          {
+            id: document.id,
+            user_id: userID
+          }
+        ]
       }
     });
 
@@ -84,6 +90,7 @@ class DocumentService {
 
       if (!sharedDocument) {
         errors.push('You dont have access to view this document.');
+        return { errors };
       }
     }
 
@@ -187,7 +194,112 @@ class DocumentService {
           await SharedDocument.bulkCreate(userData);
         }
       }
+
+      return await Document.findOne({
+        where: {
+          id: document.id
+        }
+      });
     }
+  }
+
+  async registerViewer(inputs) {
+    const user = await User.findOne({
+      where: {
+        uuid: inputs.userID
+      }
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const document = await Document.findOne({
+      where: {
+        uuid: inputs.documentID
+      }
+    });
+
+    if (!document) {
+      return null;
+    }
+
+    await DocumentViewer.destroy({
+      where: {
+        user_id: user.id,
+        document_id: document.id
+      }
+    });
+
+    await DocumentViewer.create({
+      active: true,
+      user_id: user.id,
+      document_id: document.id,
+      socket_id: inputs.socketID
+    });
+  }
+
+  async getActiveViewers(inputs) {
+    const document = await Document.findOne({
+      where: {
+        uuid: inputs.documentID
+      }
+    });
+
+    if (!document) {
+      return null;
+    }
+
+    const activeViewers = await sequelize.query(
+      `select dv.active as active, dv.user_id, dv.document_id, dv.created_at as createdAt, dv.updated_at, u.uuid as userID, u.name as userName, u.email as userEmail from document_viewers dv join users u on dv.user_id = u.id where dv.document_id = ${document.id} order by dv.updated_at desc`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+        logging: console.log
+      }
+    );
+
+    if (!activeViewers.length) {
+      return [];
+    } else {
+      let payload = [];
+      for (let viewer of activeViewers) {
+        payload.push({
+          id: viewer.userID,
+          avatar: viewer.userName.charAt(0).toUpperCase(),
+          name: viewer.userName,
+          email: viewer.userEmail,
+          timestamp: moment(viewer.createdAt).format('DD MMM, YYYY HH:mm A'),
+          active: viewer.active ? true : false
+        });
+      }
+      return payload;
+    }
+  }
+
+  async removeActiveViewer(socketID) {
+    const viewDocument = await DocumentViewer.findOne({
+      where: {
+        socket_id: socketID
+      }
+    });
+
+    await DocumentViewer.update(
+      {
+        active: false
+      },
+      {
+        where: {
+          id: viewDocument.id
+        }
+      }
+    );
+
+    return await Document.findOne({
+      where: {
+        id: viewDocument.document_id
+      },
+      attributes: ['uuid']
+    });
   }
 }
 

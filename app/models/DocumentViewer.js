@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: true
       },
       user_id: DataTypes.INTEGER,
-      document_id: DataTypes.INTEGER
+      document_id: DataTypes.INTEGER,
+      socket_id: DataTypes.STRING
     },
     {
       sequelize,

@@ -18,6 +18,9 @@ class DocumentController {
       ...req.params,
       userID: user
     });
+    if (result.errors) {
+      return res.status(400).send(result.errors);
+    }
     let documents = await DocumentTransformer(result);
     res.send(documents);
   }
