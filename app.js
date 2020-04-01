@@ -46,7 +46,7 @@ models.sequelize
   });
 
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = socketIO(server, { pingInterval: 5000 });
 
 io.on('connection', client => {
   client.on('document-connect', async payload => {
