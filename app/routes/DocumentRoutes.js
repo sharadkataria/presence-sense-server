@@ -5,10 +5,12 @@ const documentController = new DocumentController();
 
 DocumentRouter.post('/documents', authenticate(), documentController.create);
 
-DocumentRouter.get(
-  '/documents/:documentID',
+DocumentRouter.get('/documents/:documentID', documentController.getByID);
+
+DocumentRouter.put(
+  '/documents',
   authenticate(),
-  documentController.getByID
+  documentController.updateSettings
 );
 
 DocumentRouter.get('/documents', authenticate(), documentController.get);

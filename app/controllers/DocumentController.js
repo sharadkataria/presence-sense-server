@@ -25,6 +25,19 @@ class DocumentController {
     res.send(documents);
   }
 
+  async updateSettings(req, res) {
+    const user = await getUser(req, res);
+    const result = await documentService.updateSettings({
+      ...req.body,
+      userID: user
+    });
+    if (result.errors) {
+      return res.status(400).send(result.errors);
+    }
+    let documents = await DocumentTransformer(result);
+    res.send(documents);
+  }
+
   async create(req, res) {
     const user = await getUser(req, res);
     const result = await documentService.create({ ...req.body, userID: user });

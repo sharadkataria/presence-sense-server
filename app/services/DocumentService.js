@@ -20,13 +20,13 @@ class DocumentService {
 
     const sharedDocuments = await SharedDocument.findAll({
       where: { active: true, user_id: userID },
-      attributes: ['id']
+      attributes: ['document_id']
     });
 
     if (sharedDocuments.length) {
       let sharedDocumentsIDs = [];
       for (let doc of sharedDocuments) {
-        sharedDocumentsIDs.push(doc.id);
+        sharedDocumentsIDs.push(doc.document_id);
       }
 
       criteria.where = {
@@ -135,12 +135,20 @@ class DocumentService {
   }
 
   async updateSettings(inputs) {
-    const { userID, documentID, publicCheck, emails } = inputs;
+    const { userID, documentID, publicChecked, emails } = inputs;
+
+    console.log('Inputs =====', inputs);
+
+    let errors = await this.documentValidator.getByID(inputs);
+
+    if (errors.length) {
+      return { errors };
+    }
 
     const document = await Document.findOne({
       where: {
         user_id: userID,
-        document_id: documentID
+        uuid: documentID
       }
     });
 
@@ -149,7 +157,7 @@ class DocumentService {
       return { errors };
     }
 
-    if (publicCheck && publicCheck == true) {
+    if (publicChecked) {
       await Document.update(
         {
           public: true
@@ -161,11 +169,15 @@ class DocumentService {
         }
       );
 
-      return await Document.findOne({
+      const doc = await Document.findOne({
         where: {
-          document_id: document.id
+          id: document.id
         }
       });
+
+      doc.dataValues.owner = true;
+
+      return doc;
     } else {
       await Document.update(
         {
@@ -173,27 +185,27 @@ class DocumentService {
         },
         {
           where: {
-            id: document.id,
-            active: true
+            id: document.id
+          }
+        }
+      );
+
+      await SharedDocument.update(
+        {
+          active: false
+        },
+        {
+          where: {
+            document_id: document.id
           }
         }
       );
 
       if (!emails || !emails.length) {
-        await SharedDocument.update(
-          {
-            active: false
-          },
-          {
-            where: {
-              document_id: document.id
-            }
-          }
-        );
       } else {
         const users = await User.findAll({
           where: {
-            emails: {
+            email: {
               [Op.in]: emails
             }
           },
@@ -214,11 +226,24 @@ class DocumentService {
         }
       }
 
-      return await Document.findOne({
+      const doc = await Document.findOne({
         where: {
           id: document.id
         }
       });
+
+      doc.dataValues.owner = true;
+
+      const sharedUsers = await sequelize.query(
+        `select u.email as email from shared_documents sd join users u on sd.user_id = u.id where sd.document_id = ${doc.id} and active = true`,
+        {
+          type: sequelize.QueryTypes.SELECT,
+          logging: console.log
+        }
+      );
+
+      doc.dataValues.shared = sharedUsers;
+      return doc;
     }
   }
 

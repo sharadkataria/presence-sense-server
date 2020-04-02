@@ -7,7 +7,7 @@ class DocumentValidator {
     let errors = [];
     let { documentID } = inputs;
     if (!documentID) {
-      errors.push('Invalid email provided');
+      errors.push('Document ID is required.');
     }
 
     return errors;
