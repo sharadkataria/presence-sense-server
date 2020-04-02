@@ -72,6 +72,7 @@ class DocumentService {
       where: {
         [Op.or]: [
           {
+            id: document.id,
             public: true
           },
           {
@@ -92,6 +93,24 @@ class DocumentService {
         errors.push('You dont have access to view this document.');
         return { errors };
       }
+    }
+
+    if (document.user_id == userID) {
+      document.dataValues.owner = true;
+
+      if (!document.public) {
+        const sharedUsers = await sequelize.query(
+          `select u.email as email from shared_documents sd join users u on sd.user_id = u.id where sd.document_id = ${document.id} and active = true`,
+          {
+            type: sequelize.QueryTypes.SELECT,
+            logging: console.log
+          }
+        );
+
+        document.dataValues.shared = sharedUsers;
+      }
+    } else {
+      document.dataValues.owner = false;
     }
 
     return document;

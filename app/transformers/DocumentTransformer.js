@@ -7,8 +7,6 @@ const DocumentTransformer = async documents => {
       delete dataValues.user_id;
       delete dataValues.owner_id;
       dataValues.public = dataValues.public ? true : false;
-      dataValues.owner =
-        dataValues.user_id == dataValues.owner_id ? true : false;
       doc.dataValues = dataValues;
     }
 
@@ -20,7 +18,6 @@ const DocumentTransformer = async documents => {
     delete dataValues.user_id;
     delete dataValues.owner_id;
     dataValues.public = dataValues.public ? true : false;
-    dataValues.owner = dataValues.user_id == dataValues.owner_id ? true : false;
     documents.dataValues = dataValues;
     return documents;
   } else return documents;
