@@ -13,14 +13,14 @@ class DocumentService {
   async get(userID) {
     let criteria = {
       where: {
-        user_id: userID
+        user_id: userID,
       },
-      order: [['created_at', 'desc']]
+      order: [['created_at', 'desc']],
     };
 
     const sharedDocuments = await SharedDocument.findAll({
       where: { active: true, user_id: userID },
-      attributes: ['document_id']
+      attributes: ['document_id'],
     });
 
     if (sharedDocuments.length) {
@@ -32,14 +32,14 @@ class DocumentService {
       criteria.where = {
         [Op.or]: [
           {
-            user_id: userID
+            user_id: userID,
           },
           {
             id: {
-              [Op.in]: sharedDocumentsIDs
-            }
-          }
-        ]
+              [Op.in]: sharedDocumentsIDs,
+            },
+          },
+        ],
       };
     }
 
@@ -56,10 +56,10 @@ class DocumentService {
       where: {
         [Op.or]: [
           {
-            uuid: documentID
-          }
-        ]
-      }
+            uuid: documentID,
+          },
+        ],
+      },
     });
 
     if (!document) {
@@ -73,20 +73,20 @@ class DocumentService {
         [Op.or]: [
           {
             id: document.id,
-            public: true
+            public: true,
           },
           {
             id: document.id,
-            user_id: userID
-          }
-        ]
-      }
+            user_id: userID,
+          },
+        ],
+      },
     });
 
     if (!accessDocument) {
       sharedDocument = await SharedDocument.findOne({
         where: { active: true, user_id: userID, document_id: document.id },
-        attributes: ['id']
+        attributes: ['id'],
       });
 
       if (!sharedDocument) {
@@ -103,7 +103,7 @@ class DocumentService {
           `select u.email as email from shared_documents sd join users u on sd.user_id = u.id where sd.document_id = ${document.id} and active = true`,
           {
             type: sequelize.QueryTypes.SELECT,
-            logging: console.log
+            logging: console.log,
           }
         );
 
@@ -128,7 +128,7 @@ class DocumentService {
       owner_id: userID,
       user_id: userID,
       name: name,
-      public: false
+      public: false,
     });
 
     return documents;
@@ -136,8 +136,6 @@ class DocumentService {
 
   async updateSettings(inputs) {
     const { userID, documentID, publicChecked, emails } = inputs;
-
-    console.log('Inputs =====', inputs);
 
     let errors = await this.documentValidator.getByID(inputs);
 
@@ -148,8 +146,8 @@ class DocumentService {
     const document = await Document.findOne({
       where: {
         user_id: userID,
-        uuid: documentID
-      }
+        uuid: documentID,
+      },
     });
 
     if (!document) {
@@ -160,19 +158,19 @@ class DocumentService {
     if (publicChecked) {
       await Document.update(
         {
-          public: true
+          public: true,
         },
         {
           where: {
-            id: document.id
-          }
+            id: document.id,
+          },
         }
       );
 
       const doc = await Document.findOne({
         where: {
-          id: document.id
-        }
+          id: document.id,
+        },
       });
 
       doc.dataValues.owner = true;
@@ -181,23 +179,23 @@ class DocumentService {
     } else {
       await Document.update(
         {
-          public: false
+          public: false,
         },
         {
           where: {
-            id: document.id
-          }
+            id: document.id,
+          },
         }
       );
 
       await SharedDocument.update(
         {
-          active: false
+          active: false,
         },
         {
           where: {
-            document_id: document.id
-          }
+            document_id: document.id,
+          },
         }
       );
 
@@ -206,10 +204,10 @@ class DocumentService {
         const users = await User.findAll({
           where: {
             email: {
-              [Op.in]: emails
-            }
+              [Op.in]: emails,
+            },
           },
-          attributes: ['id']
+          attributes: ['id'],
         });
 
         if (users.length) {
@@ -218,7 +216,7 @@ class DocumentService {
             userData.push({
               active: true,
               document_id: document.id,
-              user_id: user.id
+              user_id: user.id,
             });
           }
 
@@ -228,8 +226,8 @@ class DocumentService {
 
       const doc = await Document.findOne({
         where: {
-          id: document.id
-        }
+          id: document.id,
+        },
       });
 
       doc.dataValues.owner = true;
@@ -238,7 +236,7 @@ class DocumentService {
         `select u.email as email from shared_documents sd join users u on sd.user_id = u.id where sd.document_id = ${doc.id} and active = true`,
         {
           type: sequelize.QueryTypes.SELECT,
-          logging: console.log
+          logging: console.log,
         }
       );
 
@@ -250,8 +248,8 @@ class DocumentService {
   async registerViewer(inputs) {
     const user = await User.findOne({
       where: {
-        uuid: inputs.userID
-      }
+        uuid: inputs.userID,
+      },
     });
 
     if (!user) {
@@ -260,8 +258,8 @@ class DocumentService {
 
     const document = await Document.findOne({
       where: {
-        uuid: inputs.documentID
-      }
+        uuid: inputs.documentID,
+      },
     });
 
     if (!document) {
@@ -271,23 +269,23 @@ class DocumentService {
     await DocumentViewer.destroy({
       where: {
         user_id: user.id,
-        document_id: document.id
-      }
+        document_id: document.id,
+      },
     });
 
     await DocumentViewer.create({
       active: true,
       user_id: user.id,
       document_id: document.id,
-      socket_id: inputs.socketID
+      socket_id: inputs.socketID,
     });
   }
 
   async getActiveViewers(inputs) {
     const document = await Document.findOne({
       where: {
-        uuid: inputs.documentID
-      }
+        uuid: inputs.documentID,
+      },
     });
 
     if (!document) {
@@ -298,7 +296,7 @@ class DocumentService {
       `select dv.active as active, dv.user_id, dv.document_id, dv.created_at as createdAt, dv.updated_at, u.uuid as userID, u.name as userName, u.email as userEmail from document_viewers dv join users u on dv.user_id = u.id where dv.document_id = ${document.id} order by dv.updated_at desc`,
       {
         type: sequelize.QueryTypes.SELECT,
-        logging: console.log
+        logging: console.log,
       }
     );
 
@@ -313,7 +311,7 @@ class DocumentService {
           name: viewer.userName,
           email: viewer.userEmail,
           timestamp: moment(viewer.createdAt).format('DD MMM, YYYY HH:mm A'),
-          active: viewer.active ? true : false
+          active: viewer.active ? true : false,
         });
       }
       return payload;
@@ -323,26 +321,26 @@ class DocumentService {
   async removeActiveViewer(socketID) {
     const viewDocument = await DocumentViewer.findOne({
       where: {
-        socket_id: socketID
-      }
+        socket_id: socketID,
+      },
     });
 
     await DocumentViewer.update(
       {
-        active: false
+        active: false,
       },
       {
         where: {
-          id: viewDocument.id
-        }
+          id: viewDocument.id,
+        },
       }
     );
 
     return await Document.findOne({
       where: {
-        id: viewDocument.document_id
+        id: viewDocument.document_id,
       },
-      attributes: ['uuid']
+      attributes: ['uuid'],
     });
   }
 }
