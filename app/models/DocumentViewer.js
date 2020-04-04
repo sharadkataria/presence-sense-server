@@ -6,29 +6,29 @@ module.exports = (sequelize, DataTypes) => {
       id: {
         type: DataTypes.INTEGER(11).UNSIGNED,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
       },
       uuid: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4
+        defaultValue: DataTypes.UUIDV4,
       },
       active: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        defaultValue: true,
       },
       user_id: DataTypes.INTEGER,
       document_id: DataTypes.INTEGER,
-      socket_id: DataTypes.STRING
+      socket_id: DataTypes.STRING,
     },
     {
       sequelize,
       modelName: 'DocumentViewer',
       tableName: 'document_viewers',
-      underscored: true
+      underscored: true,
     }
   );
 
-  DocumentViewer.associate = function(models) {};
+  DocumentViewer.associate = function (models) {};
 
   return DocumentViewer;
 };

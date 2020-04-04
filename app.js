@@ -38,24 +38,24 @@ app.use(DocumentRouter);
 
 models.sequelize
   .sync()
-  .then(function() {
+  .then(function () {
     console.log('Nice! Database looks fine');
   })
-  .catch(function(err) {
+  .catch(function (err) {
     console.log(err, 'Something went wrong with the Database Update!');
   });
 
 const server = http.createServer(app);
 const io = socketIO(server, { pingInterval: 5000 });
 
-io.on('connection', client => {
-  client.on('document-connect', async payload => {
+io.on('connection', (client) => {
+  client.on('document-connect', async (payload) => {
     console.log(payload, client.id);
 
     const dataPayload = {
       userID: payload.userID,
       documentID: payload.documentID,
-      socketID: client.id
+      socketID: client.id,
     };
 
     await documentService.registerViewer(dataPayload);
@@ -66,7 +66,7 @@ io.on('connection', client => {
   client.on('disconnect', async () => {
     const document = await documentService.removeActiveViewer(client.id);
     const activeViewers = await documentService.getActiveViewers({
-      documentID: document.uuid
+      documentID: document.uuid,
     });
     io.emit(document.uuid, activeViewers);
   });
